@@ -1,0 +1,222 @@
+{
+  "info": {
+    "name": "User Cohort Analysis API",
+    "description": "Complete API collection for user cohort analysis system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rajesh Kumar\",\n  \"email\": \"rajesh.kumar@email.com\",\n  \"phone\": \"+919876543210\",\n  \"address\": \"Mumbai, Maharashtra\",\n  \"dateOfBirth\": \"1990-05-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": "User ID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"USER_ID_HERE\",\n  \"items\": [\n    {\n      \"name\": \"iPhone 14 Pro\",\n      \"category\": \"Electronics\",\n      \"price\": 129900,\n      \"quantity\": 1\n    },\n    {\n      \"name\": \"AirPods Pro\",\n      \"category\": \"Electronics\",\n      \"price\": 24900,\n      \"quantity\": 1\n    }\n  ],\n  \"totalAmount\": 154800,\n  \"paymentMethod\": \"Credit Card\",\n  \"shippingAddress\": \"Same as billing\",\n  \"source\": \"website\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Orders by User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/user/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "user", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "description": "User ID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cohorts",
+      "item": [
+        {
+          "name": "Get Cohort Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cohorts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cohorts"]
+            }
+          }
+        },
+        {
+          "name": "Generate Cohorts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cohorts/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cohorts", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Get Users in Cohort",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cohorts/:cohortName/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cohorts", ":cohortName", "users"],
+              "variable": [
+                {
+                  "key": "cohortName",
+                  "value": "High Spender",
+                  "description": "Cohort name (e.g., High Spender, Loyal Customer)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Cohort Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cohorts/analytics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cohorts", "analytics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
