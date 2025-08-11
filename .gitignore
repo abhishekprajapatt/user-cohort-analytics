@@ -14,7 +14,7 @@ yarn-error.log*
 # Logs
 logs/
 *.log
-
+.env
 # Runtime data
 pids/
 *.pid
@@ -66,3 +66,4 @@ build/
 # Temporary files
 tmp/
 temp/
+.vercel
