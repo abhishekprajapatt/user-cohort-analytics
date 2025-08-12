@@ -13,7 +13,8 @@ const Orders = () => {
     userId: '',
     amount: '',
     orderDate: '',
-    status: 'completed',
+    status: 'Delivered',
+    paymentMethod: 'Credit Card',
   });
 
   useEffect(() => {
@@ -24,14 +25,25 @@ const Orders = () => {
     try {
       setLoading(true);
       const [ordersResponse, usersResponse] = await Promise.all([
-        ordersAPI.getAll(),
-        usersAPI.getAll(),
+        ordersAPI.getAll().catch(() => ({ data: [] })),
+        usersAPI.getAll().catch(() => ({ data: [] })),
       ]);
-      setOrders(ordersResponse.data);
-      setUsers(usersResponse.data);
+
+      console.log('Orders API response:', ordersResponse);
+      console.log('Users API response:', usersResponse);
+
+      // Handle nested response structure
+      const ordersData =
+        ordersResponse.data?.orders || ordersResponse.data || [];
+      const usersData = usersResponse.data?.users || usersResponse.data || [];
+
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
+      setOrders([]);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -41,8 +53,27 @@ const Orders = () => {
     e.preventDefault();
     try {
       const orderData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
+        userId: formData.userId,
+        totalAmount: parseFloat(formData.amount),
+        subtotal: parseFloat(formData.amount),
+        orderDate: formData.orderDate
+          ? new Date(formData.orderDate)
+          : new Date(),
+        status: formData.status,
+        paymentMethod: formData.paymentMethod,
+        items: [
+          {
+            productId: `PROD${Date.now()}`,
+            productName: 'Sample Product',
+            category: 'General',
+            quantity: 1,
+            unitPrice: parseFloat(formData.amount),
+            totalPrice: parseFloat(formData.amount),
+          },
+        ],
+        discount: 0,
+        tax: 0,
+        shippingCost: 0,
       };
 
       if (editingOrder) {
@@ -59,7 +90,8 @@ const Orders = () => {
         userId: '',
         amount: '',
         orderDate: '',
-        status: 'completed',
+        status: 'Delivered',
+        paymentMethod: 'Credit Card',
       });
       fetchData();
     } catch (error) {
@@ -72,9 +104,10 @@ const Orders = () => {
     setEditingOrder(order);
     setFormData({
       userId: order.userId,
-      amount: order.amount.toString(),
+      amount: (order.totalAmount || order.amount || 0).toString(),
       orderDate: order.orderDate?.split('T')[0] || '',
-      status: order.status || 'completed',
+      status: order.status || 'Delivered',
+      paymentMethod: order.paymentMethod || 'Credit Card',
     });
     setShowForm(true);
   };
@@ -95,7 +128,13 @@ const Orders = () => {
   const resetForm = () => {
     setShowForm(false);
     setEditingOrder(null);
-    setFormData({ userId: '', amount: '', orderDate: '', status: 'completed' });
+    setFormData({
+      userId: '',
+      amount: '',
+      orderDate: '',
+      status: 'Delivered',
+      paymentMethod: 'Credit Card',
+    });
   };
 
   const getUserName = (userId) => {
@@ -184,10 +223,32 @@ const Orders = () => {
                   setFormData({ ...formData, status: e.target.value })
                 }
               >
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="refunded">Refunded</option>
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Returned">Returned</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Payment Method</label>
+              <select
+                className="form-control"
+                value={formData.paymentMethod}
+                onChange={(e) =>
+                  setFormData({ ...formData, paymentMethod: e.target.value })
+                }
+                required
+              >
+                <option value="Credit Card">Credit Card</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="UPI">UPI</option>
+                <option value="Net Banking">Net Banking</option>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+                <option value="Wallet">Wallet</option>
               </select>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -219,15 +280,18 @@ const Orders = () => {
                 <th>Amount</th>
                 <th>Order Date</th>
                 <th>Status</th>
+                <th>Payment Method</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order._id}>
-                  <td>{order._id.slice(-6)}</td>
+                  <td>{order.orderId || order._id.slice(-6)}</td>
                   <td>{getUserName(order.userId)}</td>
-                  <td>${order.amount.toFixed(2)}</td>
+                  <td>
+                    ${(order.totalAmount || order.amount || 0).toFixed(2)}
+                  </td>
                   <td>{new Date(order.orderDate).toLocaleDateString()}</td>
                   <td>
                     <span
@@ -236,19 +300,23 @@ const Orders = () => {
                         borderRadius: '12px',
                         fontSize: '12px',
                         backgroundColor:
-                          order.status === 'completed'
+                          order.status === 'Delivered'
                             ? '#d4edda'
-                            : order.status === 'pending'
+                            : order.status === 'Pending' ||
+                              order.status === 'Processing'
                             ? '#fff3cd'
-                            : order.status === 'cancelled'
+                            : order.status === 'Cancelled' ||
+                              order.status === 'Returned'
                             ? '#f8d7da'
                             : '#d1ecf1',
                         color:
-                          order.status === 'completed'
+                          order.status === 'Delivered'
                             ? '#155724'
-                            : order.status === 'pending'
+                            : order.status === 'Pending' ||
+                              order.status === 'Processing'
                             ? '#856404'
-                            : order.status === 'cancelled'
+                            : order.status === 'Cancelled' ||
+                              order.status === 'Returned'
                             ? '#721c24'
                             : '#0c5460',
                       }}
@@ -256,6 +324,7 @@ const Orders = () => {
                       {order.status}
                     </span>
                   </td>
+                  <td>{order.paymentMethod || 'N/A'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button

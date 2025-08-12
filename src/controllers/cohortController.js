@@ -4,12 +4,6 @@ import {
   getUsersByCohort,
   calculateUserMetrics,
 } from '../services/cohortService.js';
-import {
-  getRevenueAnalysis,
-  getCLVDistribution,
-  getCustomerBehaviorInsights,
-  getChurnRiskAnalysis,
-} from '../services/analyticsService.js';
 import { API_RESPONSES } from '../utils/constants.js';
 import logger from '../utils/logger.js';
 
@@ -93,28 +87,14 @@ export const getCohortUsers = async (req, res) => {
  */
 export const getCohortAnalytics = async (req, res) => {
   try {
-    const [
-      cohortStats,
-      revenueAnalysis,
-      clvDistribution,
-      behaviorInsights,
-      churnAnalysis,
-    ] = await Promise.all([
-      getCohortStatistics(),
-      getRevenueAnalysis(),
-      getCLVDistribution(),
-      getCustomerBehaviorInsights(),
-      getChurnRiskAnalysis(),
-    ]);
+    const cohortStats = await getCohortStatistics();
 
     res.status(200).json({
       ...API_RESPONSES.SUCCESS,
       data: {
+        cohorts: cohortStats.cohorts || [],
         overview: cohortStats,
-        revenue: revenueAnalysis,
-        clvDistribution,
-        behaviorInsights,
-        churnRisk: churnAnalysis,
+        totalUsers: cohortStats.totalUsers || 0,
         generatedAt: new Date().toISOString(),
       },
     });

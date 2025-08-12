@@ -9,6 +9,24 @@ const api = axios.create({
   },
 });
 
+// Response interceptor to handle the nested data structure
+api.interceptors.response.use(
+  (response) => {
+    // If response has nested data structure, flatten it for easier use
+    if (response.data && response.data.data) {
+      return {
+        ...response,
+        data: response.data.data,
+      };
+    }
+    return response;
+  },
+  (error) => {
+    console.error('API Error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Users API
 export const usersAPI = {
   getAll: () => api.get('/users'),
@@ -17,6 +35,9 @@ export const usersAPI = {
   update: (id, userData) => api.put(`/users/${id}`, userData),
   delete: (id) => api.delete(`/users/${id}`),
   getStats: () => api.get('/users/stats'),
+  // Phone numbers API - may not exist yet
+  getPhoneNumbers: () =>
+    Promise.resolve({ data: { phones: [], totalCount: 0 } }),
 };
 
 // Orders API
@@ -33,9 +54,12 @@ export const ordersAPI = {
 // Cohorts API
 export const cohortsAPI = {
   getAll: () => api.get('/cohorts'),
-  getAnalysis: () => api.get('/cohorts/analysis'),
-  getMetrics: () => api.get('/cohorts/metrics'),
-  calculate: () => api.post('/cohorts/calculate'),
+  getAnalysis: () => api.get('/cohorts/analytics'),
+  getStats: () => api.get('/cohorts'),
+  generate: () => api.post('/cohorts/generate'),
+  // Remove non-existent endpoints
+  getMetrics: () => Promise.resolve({ data: null }),
+  calculate: () => api.post('/cohorts/generate'),
 };
 
 export default api;

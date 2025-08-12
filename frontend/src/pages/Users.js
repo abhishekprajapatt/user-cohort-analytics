@@ -23,10 +23,15 @@ const Users = () => {
     try {
       setLoading(true);
       const response = await usersAPI.getAll();
-      setUsers(response.data);
+      console.log('Users API response:', response);
+
+      // Handle the response structure - it could be nested or direct
+      const usersData = response.data?.users || response.data || [];
+      setUsers(Array.isArray(usersData) ? usersData : []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
+      setUsers([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

@@ -108,9 +108,12 @@ userSchema.virtual('age').get(function () {
 
 // Virtual for account age in days
 userSchema.virtual('accountAge').get(function () {
-  return Math.floor(
-    (Date.now() - this.registrationDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  if (this.registrationDate) {
+    return Math.floor(
+      (Date.now() - this.registrationDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  }
+  return 0;
 });
 
 // Index for efficient queries

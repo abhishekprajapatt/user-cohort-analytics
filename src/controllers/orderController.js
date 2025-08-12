@@ -187,9 +187,16 @@ export const createOrder = async (req, res) => {
   try {
     const orderData = req.body;
 
+    // Log the incoming order data for debugging
+    logger.info(
+      'Creating order with data:',
+      JSON.stringify(orderData, null, 2)
+    );
+
     // Verify that the user exists
     const user = await User.findById(orderData.userId);
     if (!user) {
+      logger.error(`User not found with ID: ${orderData.userId}`);
       return res.status(404).json({
         ...API_RESPONSES.NOT_FOUND,
         message: 'User not found',
@@ -211,6 +218,14 @@ export const createOrder = async (req, res) => {
     });
   } catch (error) {
     if (error.name === 'ValidationError') {
+      logger.error('Order validation failed:', {
+        errors: Object.values(error.errors).map((err) => ({
+          field: err.path,
+          message: err.message,
+          value: err.value,
+        })),
+        orderData: req.body,
+      });
       return res.status(400).json({
         ...API_RESPONSES.VALIDATION_ERROR,
         message: 'Validation failed',

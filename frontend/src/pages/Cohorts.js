@@ -30,17 +30,30 @@ const Cohorts = () => {
       setLoading(true);
       const [cohortsResponse, metricsResponse, analysisResponse] =
         await Promise.all([
-          cohortsAPI.getAll().catch(() => ({ data: [] })),
+          cohortsAPI.getStats().catch(() => ({ data: { cohorts: [] } })),
           cohortsAPI.getMetrics().catch(() => ({ data: null })),
           cohortsAPI.getAnalysis().catch(() => ({ data: null })),
         ]);
 
-      setCohorts(cohortsResponse.data || []);
-      setMetrics(metricsResponse.data);
-      setAnalysis(analysisResponse.data);
+      console.log('Cohorts responses:', {
+        cohortsResponse,
+        metricsResponse,
+        analysisResponse,
+      });
+
+      // Handle nested response structure for cohorts
+      const cohortsData =
+        cohortsResponse.data?.cohorts || cohortsResponse.data || [];
+      setCohorts(Array.isArray(cohortsData) ? cohortsData : []);
+
+      setMetrics(metricsResponse.data || null);
+      setAnalysis(analysisResponse.data || null);
     } catch (error) {
       console.error('Error fetching cohort data:', error);
       toast.error('Failed to load cohort data');
+      setCohorts([]);
+      setMetrics(null);
+      setAnalysis(null);
     } finally {
       setLoading(false);
     }
@@ -49,7 +62,7 @@ const Cohorts = () => {
   const handleCalculateCohorts = async () => {
     try {
       setCalculating(true);
-      await cohortsAPI.calculate();
+      await cohortsAPI.generate();
       toast.success('Cohorts calculated successfully');
       fetchCohortData();
     } catch (error) {
